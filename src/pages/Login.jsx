@@ -59,7 +59,9 @@ export default function Login() {
         <button type="submit" className="btn primary">
           Sign in
         </button>
-        <button type=" " className="btn secondary">
+      </form>
+      <form className="login-card" onSubmit={() => { }}>
+        <button disabled className="btn secondary">
           Log in using SSO
         </button>
       </form>
