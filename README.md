@@ -15,9 +15,9 @@ A simple Single Sign-On demo built with **React + Vite** that shows email/passwo
 
 | Role    | Email                | Password   | Access                            |
 | ------- | -------------------- | ---------- | --------------------------------- |
-| admin   | admin@example.com    | admin123   | Dashboard, Editor, Admin          |
-| editor  | editor@example.com   | editor123  | Dashboard, Editor                 |
-| viewer  | viewer@example.com   | viewer123  | Dashboard only                    |
+| admin   | admin@gmail.com    | admin123   | Dashboard, Editor, Admin          |
+| editor  | editor@gmail.com   | editor123  | Dashboard, Editor                 |
+| viewer  | viewer@gmail.com   | viewer123  | Dashboard only                    |
 
 ## Routes
 
