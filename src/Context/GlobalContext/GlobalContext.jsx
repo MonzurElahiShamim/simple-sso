@@ -3,8 +3,8 @@ import { ROLE_PERMISSIONS, USERS } from '../../data/users'
 import { keycloak, sessionFromToken } from '../../keycloak'
 
 const SESSION_KEY = 'sso-user'
-// Which login path the session came from, so a reload only queries Keycloak
-// when the session actually came from Keycloak.
+// Which login path the session came from. Logout uses it to decide whether
+// Keycloak's own session has to be ended as well.
 const SOURCE_KEY = 'sso-auth-source'
 
 // null, not {}: a component used outside the provider then fails loudly below
@@ -113,20 +113,23 @@ export function GlobalContextProvider({ children }) {
     if (didInit.current) return
     didInit.current = true
 
-    const cameFromKeycloak = sessionStorage.getItem(SOURCE_KEY) === 'keycloak'
-
     keycloak
       .init({
-        // Restores an existing Keycloak session without showing a login form.
-        // Skipped for mock sessions so they never pay for a redirect.
-        onLoad: cameFromKeycloak ? 'check-sso' : undefined,
+        // Signs the user in automatically when Keycloak already has a session
+        // for this browser. Redirects to Keycloak with prompt=none, which
+        // returns immediately without showing a login form.
+        onLoad: 'check-sso',
         pkceMethod: 'S256',
         // Needs third-party cookies, which browsers increasingly block.
         checkLoginIframe: false,
       })
       .then((authenticated) => {
         // Do not clear `user` when false - it may be a valid mock session.
-        if (authenticated) applyKeycloakSession()
+        // An active mock session also takes precedence, so a reload cannot
+        // silently replace the signed-in user with a different one.
+        if (authenticated && sessionStorage.getItem(SOURCE_KEY) !== 'mock') {
+          applyKeycloakSession()
+        }
       })
       .catch((error) => {
         console.error('Keycloak init failed:', error)

@@ -52,12 +52,34 @@ the navigation bar shows which one the current session used.
 | --- | --- | --- |
 | Credentials | `src/data/users.js`, in the browser | Keycloak's login page |
 | Role source | The user record | `realm_access.roles` in the access token |
-| Reload handling | `sessionStorage` | `sessionStorage` and a `check-sso` call |
+| Reload handling | `sessionStorage` | `sessionStorage`, plus a `check-sso` call on every load |
 
 The mock login exists for comparison only. Passwords are in the client bundle
 and role checks run entirely in the browser, so any user can grant themselves
 `admin` from the developer console. A real application must validate the token
 server-side on every request.
+
+### Automatic sign-in
+
+On startup the app calls `keycloak.init({ onLoad: 'check-sso' })`. If Keycloak
+already has a session for the browser — from this app, another application in
+the same realm, or Keycloak's own account console — the user is signed in
+without seeing a login form.
+
+The check is a redirect to Keycloak carrying `prompt=none`. Keycloak answers
+immediately, either with an authorization code or with "not logged in", and
+sends the browser back. Nothing is configured on the Keycloak side: the browser
+flow already tries an existing session cookie before it offers a login form.
+
+Two consequences:
+
+- Every page load makes that round trip, including for visitors who are not
+  logged in. It is quick, but it is not free.
+- An active mock session takes precedence, so reloading the page cannot
+  silently replace the signed-in user with a different one.
+
+Signing out of an SSO session also ends the Keycloak session, otherwise the
+next page load would sign the user straight back in.
 
 ## Scripts
 
